@@ -387,7 +387,7 @@ class DuckDBExecutor(Executor):
             f"CREATE SCHEMA IF NOT EXISTS {sqlglot.exp.parse_identifier(db).sql()}.{sqlglot.exp.parse_identifier(schema).sql()}"
             for
             (db, schema) in schemas]
-        views_sql = [f"CREATE OR REPLACE VIEW {table.sql()} AS SELECT * FROM {self.get_iceberg_read(location)}" for
+        views_sql = [f"CREATE OR REPLACE TABLE {table.sql()} AS SELECT * FROM {self.get_iceberg_read(location)}" for
                      table, location
                      in locations.items()]
         views_sql = ";\n".join(databases_sql + schemas_sql + views_sql)
@@ -497,7 +497,7 @@ class DuckDBExecutor(Executor):
                         properties.expressions.append(
                             Property(this=Var(this='METADATA_FILE_PATH'), value=Literal.string(metadata_file_path)))
                         return {destination_table: ast}
-                elif ast.kind == 'VIEW':
+                elif ast.kind == 'TABLE':
                     properties = destination_table.args.get('properties') or Properties()
                     is_temp = TemporaryProperty() in properties.expressions
                     duckdb_query = self._sync_catalog(ast, tables).sql(dialect="duckdb")
